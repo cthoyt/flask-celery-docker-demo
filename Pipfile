@@ -4,12 +4,13 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-celery = {version = "*", extras = ["redis"]}
 flask = "*"
 flask-bootstrap = "*"
 flask-wtf = "*"
 wtforms = "*"
 sqlalchemy = "*"
+celery = "*"
+gunicorn = "*"
 
 [dev-packages]
 
