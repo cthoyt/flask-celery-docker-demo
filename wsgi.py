@@ -62,14 +62,19 @@ CELERY_BROKER_URL = 'CELERY_BROKER_URL'
 #: The name of the configuration option for the Celery result backend.
 CELERY_RESULT_BACKEND = 'CELERY_RESULT_BACKEND'
 
-#: The name of the configuration option for the Flask-SQLAlchemy database URI.
-SQLALCHEMY_DATABASE_URI = 'SQLALCHEMY_DATABASE_URI'
-
-#: The configuration
+#: The configuration dictionary for flask and celery. In your application, this might be loaded from the environment
+#: or elsewhere.
 config = {
+
+    # The broker is the address of the message queue that mediates communication between the Flask app and the worker
+    # In this example, RabbitMQ is used over AMPQ protocol
+    # See: http://docs.celeryproject.org/en/latest/getting-started/first-steps-with-celery.html#choosing-a-broker
     CELERY_BROKER_URL: 'amqp://localhost',
+
+    # The result backend stores the results of tasks.
+    # In this example, SQLAlchemy is used with SQLite.
+    # See: http://celery.readthedocs.io/en/latest/userguide/configuration.html#task-result-backend-settings
     CELERY_RESULT_BACKEND: 'db+sqlite:///results.sqlite',  # 'redis://localhost',
-    SQLALCHEMY_DATABASE_URI: 'sqlite:////tmp/test.db'
 }
 
 
@@ -78,14 +83,14 @@ config = {
 #########
 
 class MyForm(FlaskForm):
-    """Builds the form for uploading a file."""
+    """A form for uploading a file."""
 
     file = FileField('My File', validators=[DataRequired()])
     submit = SubmitField('Upload')
 
 
 def handle_form(form: MyForm):
-    """Handle the form and make an arguments tuple to pass to the task queue.
+    """Handle a file upload form and make an arguments tuple to pass to the task queue.
 
     :param form: The FlaskForm to handle
     :rtype: tuple
@@ -152,7 +157,7 @@ def home():
     form = MyForm()
 
     if not form.validate_on_submit():
-        return render_template('templates/index.html', form=form)
+        return render_template('index.html', form=form)
 
     args = handle_form(form)
 
@@ -162,7 +167,7 @@ def home():
     url = url_for('results', task=task.task_id)
     flash(Markup(f'Queued task <a href="{url}">{task}</a>.'))
 
-    return render_template('templates/index.html', form=form)
+    return render_template('index.html', form=form)
 
 
 @app.route('/check/<task>', methods=['GET'])
@@ -199,7 +204,7 @@ def results(task):
         flash(Markup(f'Queued task <a href="{url}">{task}</a> is not yet complete.'), category='warning')
         return redirect(url_for('home'))
 
-    return render_template('templates/results.html', task=task)
+    return render_template('results.html', task=task)
 
 
 ########
