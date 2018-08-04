@@ -6,6 +6,13 @@ so you can take your scripts and make them into web interfaces!
 
 If this repository is helpful, please link to it from your documentation. 
 
+Docker
+------
+To show how this application can be quickly dockerized, a ``Dockerfile`` and ``docker-compose.yml``
+file are included.
+
+To run them, just type ``docker-compose up``.
+
 Contributing
 ------------
 If you have any ideas to improve this tutorial, please open an issue or 

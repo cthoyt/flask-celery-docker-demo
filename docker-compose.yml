@@ -1,0 +1,33 @@
+# Follow guide at https://realpython.com/blog/python/dockerizing-flask-with-compose-and-machine-from-localhost-to-the-cloud/
+
+version: '3'
+
+services:
+
+  flask:
+    build: .
+    volumes:
+     - .:/app
+    environment:
+      CELERY_BROKER_URL: amqp://queue
+    restart: always
+    command: pipenv run gunicorn -b 0.0.0.0:5000 wsgi:app --log-level=INFO
+    ports:
+      - "5000:5000"
+    depends_on:
+     - queue
+     - worker
+
+  worker:
+    build: .
+    volumes:
+     - .:/app
+    environment:
+      CELERY_BROKER_URL: amqp://queue
+    restart: always
+    command: celery worker -A wsgi.celery -l INFO
+    depends_on:
+     - queue
+
+  queue:
+    image: rabbitmq:3.7.7-alpine
