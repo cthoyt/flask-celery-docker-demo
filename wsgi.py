@@ -178,7 +178,7 @@ def check(task):
     """
     task = AsyncResult(task, app=celery)
 
-    if task.status == 'SUCCESS':
+    if not task.successful():
         return jsonify(
             task_id=task.task_id,
             status=task.status,
@@ -199,7 +199,7 @@ def results(task):
     """
     task = AsyncResult(task, app=celery)
 
-    if task.status != 'SUCCESS':
+    if not task.successful():
         url = url_for('results', task=task.task_id)
         flash(Markup(f'Queued task <a href="{url}">{task}</a> is not yet complete.'), category='warning')
         return redirect(url_for('home'))
