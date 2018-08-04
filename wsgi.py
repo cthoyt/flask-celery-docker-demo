@@ -69,12 +69,12 @@ config = {
     # The broker is the address of the message queue that mediates communication between the Flask app and the worker
     # In this example, RabbitMQ is used over AMPQ protocol
     # See: http://docs.celeryproject.org/en/latest/getting-started/first-steps-with-celery.html#choosing-a-broker
-    CELERY_BROKER_URL: 'amqp://localhost',
+    CELERY_BROKER_URL: os.environ.get(CELERY_BROKER_URL, 'amqp://localhost'),
 
     # The result backend stores the results of tasks.
     # In this example, SQLAlchemy is used with SQLite.
     # See: http://celery.readthedocs.io/en/latest/userguide/configuration.html#task-result-backend-settings
-    CELERY_RESULT_BACKEND: 'db+sqlite:///results.sqlite',  # 'redis://localhost',
+    CELERY_RESULT_BACKEND: os.environ.get(CELERY_RESULT_BACKEND, 'db+sqlite:///results.sqlite'),
 }
 
 
