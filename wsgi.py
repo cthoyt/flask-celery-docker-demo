@@ -4,26 +4,37 @@
 
 The message queue, the Python web application, and the celery worker all have to be running at the same time.
 
-1. Run a broker (this example uses `RabbitMQ <https://www.rabbitmq.com/>`_) or see the ``celery`` documentation for
+Run the Broker
+--------------
+This example uses `RabbitMQ <https://www.rabbitmq.com/>`_, or see the ``celery`` documentation for
 more `choices and installation instructions
 <http://docs.celeryproject.org/en/latest/getting-started/first-steps-with-celery.html#choosing-a-broker>`_.
 
-2. Run application with:
+Run the Application
+----------------
+The application can be quickly run with the Flask debugging server, however, this should not be used in production.
 
 .. code-block:: bash
 
     $ python -m wsgi.py
 
-Alternatively, `gunicorn <http://gunicorn.org/>`_, `uWSGI <https://uwsgi-docs.readthedocs.io/en/latest/>`_, or other
-`deplyment options <http://flask.pocoo.org/docs/1.0/deploying/#deployment>`_. This example uses the Flask testing
-server, which should not be used in production!
+After installing `gunicorn <http://gunicorn.org/>`_ with ``pip install gunicorn``, it can be run with a more
+production-ready server:
 
-3. Run celery worker with:
+.. code-block:: bash
+
+    $ gunicorn -b 0.0.0.0:5000 wsgi:app --log-level=INFO
+
+
+Alternatively `uWSGI <https://uwsgi-docs.readthedocs.io/en/latest/>`_, Apache, or other
+`deployment options <http://flask.pocoo.org/docs/1.0/deploying/#deployment>`_.
+
+Run the Celery Worker
+---------------------
 
 .. code-block:: bash
 
     $ celery worker -A wsgi.celery -l INFO
-
 """
 
 import logging
@@ -31,6 +42,7 @@ import os
 import random
 import time
 from base64 import urlsafe_b64decode, urlsafe_b64encode
+from typing import Mapping, Tuple
 
 from celery import Celery
 from celery.result import AsyncResult
@@ -89,11 +101,10 @@ class MyForm(FlaskForm):
     submit = SubmitField('Upload')
 
 
-def handle_form(form: MyForm):
+def handle_form(form: MyForm) -> Tuple:
     """Handle a file upload form and make an arguments tuple to pass to the task queue.
 
     :param form: The FlaskForm to handle
-    :rtype: tuple
     """
     contents = form.file.data.stream.read()
     contents = urlsafe_b64encode(contents).decode("utf-8")
@@ -130,14 +141,14 @@ celery = Celery(
 
 # Define the task using the celery.task annotation
 @celery.task
-def my_task(contents):
+def my_task(contents: str) -> Mapping:
     """Take some simple statistics over a file.
 
-    :param str contents: The contents of a file (base64 urlencoded)
-    :rtype: int
+    :param contents: The contents of a file (base64 urlencoded)
     """
     contents = urlsafe_b64decode(contents.encode('utf-8')).decode('utf-8')
 
+    # for this example, sleep a trivial amount of time to show what happens when a job is running
     time.sleep(random.randint(5, 10))
 
     return {
@@ -171,10 +182,10 @@ def home():
 
 
 @app.route('/check/<task>', methods=['GET'])
-def check(task):
+def check(task: str):
     """Check the given task.
 
-    :param str task: The UUID of a task.
+    :param task: The UUID of a task.
     """
     task = AsyncResult(task, app=celery)
 
@@ -192,10 +203,10 @@ def check(task):
 
 
 @app.route('/results/<task>', methods=['GET'])
-def results(task):
+def results(task: str):
     """Check the given task.
 
-    :param str task: The UUID of a task.
+    :param task: The UUID of a task.
     """
     task = AsyncResult(task, app=celery)
 
