@@ -1,0 +1,27 @@
+{% extends "bootstrap/base.html" %}
+
+{% import "bootstrap/wtf.html" as wtf %}
+{% import "bootstrap/fixes.html" as fixes %}
+{% import "bootstrap/utils.html" as util %}
+
+{% block title %}Results for {{ task.task_id }}{% endblock %}
+
+{% block content %}
+    <br/>
+    <div class="container">
+        {{ util.flashed_messages(dismissible=True, container=False) }}
+
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">
+                    Results for {{ task.task_id }}
+
+                    <a href="{{ url_for('home') }}" class="pull-right">Home</a>
+                </h3>
+            </div>
+            <div class="panel-body">
+                {{ task.result|safe }}
+            </div>
+        </div>
+    </div>
+{% endblock %}
