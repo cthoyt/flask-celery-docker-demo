@@ -25,13 +25,11 @@ production-ready server:
 
     $ gunicorn -b 0.0.0.0:5000 wsgi:app --log-level=INFO
 
-
 Alternatively `uWSGI <https://uwsgi-docs.readthedocs.io/en/latest/>`_, Apache, or other
 `deployment options <http://flask.pocoo.org/docs/1.0/deploying/#deployment>`_.
 
 Run the Celery Worker
 ---------------------
-
 .. code-block:: bash
 
     $ celery worker -A wsgi.celery -l INFO
@@ -74,6 +72,9 @@ CELERY_BROKER_URL = 'CELERY_BROKER_URL'
 #: The name of the configuration option for the Celery result backend.
 CELERY_RESULT_BACKEND = 'CELERY_RESULT_BACKEND'
 
+#: The name of the configuration option for Flask security purposes.
+SECRET_KEY = 'SECRET_KEY'
+
 #: The configuration dictionary for flask and celery. In your application, this might be loaded from the environment
 #: or elsewhere.
 config = {
@@ -87,6 +88,9 @@ config = {
     # In this example, SQLAlchemy is used with SQLite.
     # See: http://celery.readthedocs.io/en/latest/userguide/configuration.html#task-result-backend-settings
     CELERY_RESULT_BACKEND: os.environ.get(CELERY_RESULT_BACKEND, 'db+sqlite:///results.sqlite'),
+
+    # Set a random key for CSRF (for Flask-WTF)
+    SECRET_KEY: os.environ.get(SECRET_KEY, os.urandom(8))
 }
 
 
@@ -120,9 +124,6 @@ app = Flask('wsgi')
 
 # Update configuration. Might want to get from a config file or environment for different deployments
 app.config.update(config)
-
-# Set a random key for CSRF (for Flask-WTF)
-app.secret_key = os.urandom(8)
 
 # Add the Flask-Bootstrap extension
 Bootstrap(app)
