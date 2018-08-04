@@ -165,7 +165,7 @@ def home():
     task = my_task.delay(*args)
 
     url = url_for('results', task=task.task_id)
-    flash(Markup(f'Queued task <a href="{url}">{task}</a>.'))
+    flash(Markup(f'Queued task <code><a href="{url}">{task}</a></code>.'))
 
     return render_template('index.html', form=form)
 
@@ -201,7 +201,7 @@ def results(task):
 
     if not task.successful():
         url = url_for('results', task=task.task_id)
-        flash(Markup(f'Queued task <a href="{url}">{task}</a> is not yet complete.'), category='warning')
+        flash(Markup(f'Task <code><a href="{url}">{task}</a></code> is not yet complete.'), category='warning')
         return redirect(url_for('home'))
 
     return render_template('results.html', task=task)
