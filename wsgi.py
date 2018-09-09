@@ -147,15 +147,21 @@ def my_task(contents: str) -> Mapping:
 
     :param contents: The contents of a file (base64 urlencoded)
     """
-    contents = urlsafe_b64decode(contents.encode('utf-8')).decode('utf-8')
+    try:
+        contents = urlsafe_b64decode(contents.encode('utf-8')).decode('utf-8')
+    except UnicodeDecodeError:
+        rv = 'failed to decode.'
+    else:
+        rv = {
+            'lines': contents.count('\n'),
+            'characters': len(contents),
+        }
 
-    # for this example, sleep a trivial amount of time to show what happens when a job is running
+    # for this example, sleep a trivial amount of time to show what happens
+    # when a job is running
     time.sleep(random.randint(5, 10))
 
-    return {
-        'lines': contents.count('\n'),
-        'characters': len(contents),
-    }
+    return rv
 
 
 ################
