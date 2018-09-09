@@ -75,17 +75,19 @@ CELERY_RESULT_BACKEND = 'CELERY_RESULT_BACKEND'
 #: The name of the configuration option for Flask security purposes.
 SECRET_KEY = 'SECRET_KEY'
 
-#: The configuration dictionary for flask and celery. In your application, this might be loaded from the environment
-#: or elsewhere.
+#: The configuration dictionary for flask and celery. In your application, this
+#: might be loaded from the environment or elsewhere.
 config = {
 
-    # The broker is the address of the message queue that mediates communication between the Flask app and the worker
-    # In this example, RabbitMQ is used over AMPQ protocol
+    # The broker is the address of the message queue that mediates
+    # communication between the Flask app and the worker In this
+    # example, RabbitMQ is used over AMPQ protocol. As an example,
+    # use:  'amqp://localhost'
     # See: http://docs.celeryproject.org/en/latest/getting-started/first-steps-with-celery.html#choosing-a-broker
     CELERY_BROKER_URL: os.environ[CELERY_BROKER_URL],
 
-    # The result backend stores the results of tasks.
-    # In this example, SQLAlchemy is used with SQLite.
+    # The result backend stores the results of tasks. As an example,
+    # SQLAlchemy can be used with SQLite like: 'db+sqlite:///results.sqlite'
     # See: http://celery.readthedocs.io/en/latest/userguide/configuration.html#task-result-backend-settings
     CELERY_RESULT_BACKEND: os.environ[CELERY_RESULT_BACKEND],
 
@@ -105,10 +107,12 @@ class MyForm(FlaskForm):
     submit = SubmitField('Upload')
 
 
-def handle_form(form: MyForm) -> Tuple:
-    """Handle a file upload form and make an arguments tuple to pass to the task queue.
+def handle_form(form: MyForm) -> Tuple[str,]:
+    """Prepare a file upload for for the task queue.
 
     :param form: The FlaskForm to handle
+    :return: A 1-tuple pass as arguments to the task queue in which
+             the first element is the contents as a string.
     """
     contents = form.file.data.stream.read()
     contents = urlsafe_b64encode(contents).decode("utf-8")
@@ -119,10 +123,12 @@ def handle_form(form: MyForm) -> Tuple:
 # Flask App #
 #############
 
-# Create the Flask application (needs same name as python file so tasks can get found properly. Use __name__ otherwise)
+# Create the Flask application (needs same name as python file so tasks can
+# get found properly. Use __name__ otherwise)
 app = Flask('wsgi')
 
-# Update configuration. Might want to get from a config file or environment for different deployments
+# Update configuration. Might want to get from a config file or environment
+# for different deployments
 app.config.update(config)
 
 # Add the Flask-Bootstrap extension
@@ -219,7 +225,8 @@ def results(task: str):
 
     if not task.successful():
         url = url_for('results', task=task.task_id)
-        flash(Markup(f'Task <code><a href="{url}">{task}</a></code> is not yet complete.'), category='warning')
+        markup = Markup(f'Task <code><a href="{url}">{task}</a></code> is not yet complete.')
+        flash(markup, category='warning')
         return redirect(url_for('home'))
 
     return render_template('results.html', task=task)
