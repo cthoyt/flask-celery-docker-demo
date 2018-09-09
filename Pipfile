@@ -9,10 +9,10 @@ flask-bootstrap = "*"
 flask-wtf = "*"
 wtforms = "*"
 sqlalchemy = "*"
-celery = "*"
+celery = {version = "*", extras = ["redis"]}
 gunicorn = "*"
 
 [dev-packages]
 
 [requires]
-python_version = "3.7"
+python_version = "3.6"

@@ -9,13 +9,15 @@ services:
     volumes:
      - .:/app
     environment:
-      CELERY_BROKER_URL: amqp://queue
+      CELERY_BROKER_URL: amqp://broker
+      CELERY_RESULT_BACKEND: redis://result_backend
     restart: always
     command: pipenv run gunicorn -b 0.0.0.0:5000 wsgi:app --log-level=INFO
     ports:
       - "5000:5000"
     depends_on:
-     - queue
+     - broker
+     - result_backend
      - worker
 
   worker:
@@ -23,11 +25,16 @@ services:
     volumes:
      - .:/app
     environment:
-      CELERY_BROKER_URL: amqp://queue
+      CELERY_BROKER_URL: amqp://broker
+      CELERY_RESULT_BACKEND: redis://result_backend
     restart: always
     command: celery worker -A wsgi.celery -l INFO
     depends_on:
-     - queue
+     - broker
+     - result_backend
 
-  queue:
+  broker:
     image: rabbitmq:3.7.7-alpine
+
+  result_backend:
+    image: redis:4.0.11-alpine
