@@ -28,7 +28,7 @@ services:
       CELERY_BROKER_URL: amqp://broker
       CELERY_RESULT_BACKEND: redis://result_backend
     restart: always
-    command: celery worker -A wsgi.celery -l INFO
+    command: pipenv run celery worker -A wsgi.celery -l INFO
     depends_on:
      - broker
      - result_backend
